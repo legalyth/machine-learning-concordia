@@ -1,0 +1,173 @@
+00:16:15 | INFO     | Pipeline started
+00:16:15 | INFO     | ===== STEP 1/5: EXPLORATORY DATA ANALYSIS =====
+00:16:15 | INFO     | --- Loading & preparing data ---
+00:16:15 | INFO     | Data: 3000 rows, 10 cols, 0 missing, 0 dupes
+00:16:15 | INFO     | After feature engineering: 3000 rows x 16 cols
+00:16:15 | INFO     | --- Generating 12 EDA visualisations ---
+00:16:21 | INFO     | [OK] All 12 EDA plots saved to d:\ALL\Khemra\Cours\2025-2026\S6\TI608 - Machine Learning\Project\plots/
+00:16:21 | INFO     | [OK] EDA completed in 6.0s
+00:16:21 | INFO     | ===== STEP 2/5: CLASSIFICATION MODEL TRAINING =====
+00:16:21 | INFO     | --- Loading classification data ---
+00:16:21 | INFO     | Classes (6): ['DDoS', 'Malware', 'Man-in-the-Middle', 'Phishing', 'Ransomware', 'SQL Injection']
+00:16:21 | INFO     | Train: 2400  Test: 600  Features: 45
+00:16:21 | INFO     | --- [1/5] Random Forest (GridSearchCV) ---
+00:16:32 | INFO     | Best params: {'max_depth': None, 'min_samples_split': 2, 'n_estimators': 200}
+00:16:44 | INFO     | RandomForest trained
+00:16:44 | INFO     |   Accuracy: 0.1967
+00:16:44 | INFO     |   F1 (macro): 0.1941
+00:16:44 | INFO     |   F1 (weighted): 0.1953
+00:16:44 | INFO     |   CV Accuracy: 0.1871
+00:16:44 | INFO     |   CV Std: 0.0120
+00:16:44 | INFO     | --- [2/5] XGBoost (GridSearchCV) ---
+00:16:56 | INFO     | Best params: {'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 200}
+00:17:08 | INFO     | XGBoost trained
+00:17:08 | INFO     |   Accuracy: 0.1467
+00:17:08 | INFO     |   F1 (macro): 0.1451
+00:17:08 | INFO     |   F1 (weighted): 0.1458
+00:17:08 | INFO     |   CV Accuracy: 0.1679
+00:17:08 | INFO     |   CV Std: 0.0061
+00:17:08 | INFO     | --- [3/5] SVM (GridSearchCV) ---
+00:17:37 | INFO     | Best params: {'C': 10, 'gamma': 'auto', 'kernel': 'rbf'}
+00:17:57 | INFO     | SVM trained
+00:17:57 | INFO     |   Accuracy: 0.1933
+00:17:57 | INFO     |   F1 (macro): 0.1914
+00:17:57 | INFO     |   F1 (weighted): 0.1919
+00:17:57 | INFO     |   CV Accuracy: 0.1721
+00:17:57 | INFO     |   CV Std: 0.0163
+00:17:57 | INFO     | --- [4/5] Voting Ensemble (soft) ---
+00:18:34 | INFO     | VotingEnsemble trained
+00:18:34 | INFO     |   Accuracy: 0.1733
+00:18:34 | INFO     |   F1 (macro): 0.1690
+00:18:34 | INFO     |   F1 (weighted): 0.1708
+00:18:34 | INFO     |   CV Accuracy: 0.1675
+00:18:34 | INFO     |   CV Std: 0.0061
+00:18:34 | INFO     | --- [5/5] Stacking Ensemble ---
+00:21:31 | INFO     | StackingEnsemble trained
+00:21:31 | INFO     |   Accuracy: 0.1783
+00:21:31 | INFO     |   F1 (macro): 0.1434
+00:21:31 | INFO     |   F1 (weighted): 0.1470
+00:21:31 | INFO     |   CV Accuracy: 0.1696
+00:21:31 | INFO     |   CV Std: 0.0134
+00:21:31 | INFO     | Table: Classification Results
+00:21:31 | INFO     | Model | Accuracy | F1 (weighted)
+00:21:31 | INFO     | RandomForest | 0.1967 | 0.1953
+00:21:31 | INFO     | XGBoost | 0.1467 | 0.1458
+00:21:31 | INFO     | SVM | 0.1933 | 0.1919
+00:21:31 | INFO     | VotingEnsemble | 0.1733 | 0.1708
+00:21:31 | INFO     | StackingEnsemble | 0.1783 | 0.1470
+00:21:31 | INFO     | BEST MODEL: RandomForest — {'Accuracy': 0.19666666666666666, 'F1 (weighted)': np.float64(0.19525899940784847)}
+00:21:36 | INFO     | [OK] All classification models saved to d:\ALL\Khemra\Cours\2025-2026\S6\TI608 - Machine Learning\Project\models/
+00:21:36 | INFO     | [OK] Classification training completed in 315.2s
+00:21:36 | INFO     | ===== STEP 3/5: REGRESSION MODEL TRAINING =====
+00:21:36 | INFO     | --- Loading regression data ---
+00:21:36 | INFO     | Train: 2400  Test: 600  Features: 44
+00:21:36 | INFO     | Target range: [0.50, 99.99]
+00:21:36 | INFO     | --- [1/5] Random Forest Regressor (GridSearchCV) ---
+00:22:10 | INFO     | Best params: {'max_depth': None, 'min_samples_split': 2, 'n_estimators': 100}
+00:22:23 | INFO     | RandomForest trained
+00:22:23 | INFO     |   R²: 0.9910
+00:22:23 | INFO     |   MAE: 1.3792
+00:22:23 | INFO     |   RMSE: 2.7034
+00:22:23 | INFO     |   CV R² (mean): 0.9868
+00:22:23 | INFO     |   CV Std: 0.0039
+00:22:23 | INFO     | --- [2/5] XGBoost Regressor (GridSearchCV) ---
+00:22:25 | INFO     | Best params: {'learning_rate': 0.1, 'max_depth': 6, 'n_estimators': 200}
+00:22:31 | INFO     | XGBoost trained
+00:22:31 | INFO     |   R²: 0.9897
+00:22:31 | INFO     |   MAE: 1.3006
+00:22:31 | INFO     |   RMSE: 2.8903
+00:22:31 | INFO     |   CV R² (mean): 0.9901
+00:22:31 | INFO     |   CV Std: 0.0036
+00:22:31 | INFO     | --- [3/5] Ridge Regression (GridSearchCV) ---
+00:22:31 | INFO     | Best params: {'alpha': 100.0}
+00:22:34 | INFO     | Ridge trained
+00:22:34 | INFO     |   R²: 0.1125
+00:22:34 | INFO     |   MAE: 22.4533
+00:22:34 | INFO     |   RMSE: 26.7898
+00:22:34 | INFO     |   CV R² (mean): 0.1350
+00:22:34 | INFO     |   CV Std: 0.0201
+00:22:34 | INFO     | --- [4/5] Voting Regressor ---
+00:22:49 | INFO     | VotingEnsemble trained
+00:22:49 | INFO     |   R²: 0.8996
+00:22:49 | INFO     |   MAE: 7.6380
+00:22:49 | INFO     |   RMSE: 9.0094
+00:22:49 | INFO     |   CV R² (mean): 0.8926
+00:22:49 | INFO     |   CV Std: 0.0034
+00:22:49 | INFO     | --- [5/5] Stacking Regressor ---
+00:23:53 | INFO     | StackingEnsemble trained
+00:23:53 | INFO     |   R²: 0.9932
+00:23:53 | INFO     |   MAE: 1.1752
+00:23:53 | INFO     |   RMSE: 2.3469
+00:23:53 | INFO     |   CV R² (mean): 0.9906
+00:23:53 | INFO     |   CV Std: 0.0031
+00:23:53 | INFO     | Table: Regression Results
+00:23:53 | INFO     | Model | R² | MAE
+00:23:53 | INFO     | RandomForest | 0.9910 | 1.3792
+00:23:53 | INFO     | XGBoost | 0.9897 | 1.3006
+00:23:53 | INFO     | Ridge | 0.1125 | 22.4533
+00:23:53 | INFO     | VotingEnsemble | 0.8996 | 7.6380
+00:23:53 | INFO     | StackingEnsemble | 0.9932 | 1.1752
+00:23:53 | INFO     | BEST MODEL: StackingEnsemble — {'R²': 0.9931887937226935, 'MAE': np.float64(1.1751590666701752)}
+00:23:54 | INFO     | [OK] All regression models saved to d:\ALL\Khemra\Cours\2025-2026\S6\TI608 - Machine Learning\Project\models/
+00:23:54 | INFO     | [OK] Regression training completed in 137.5s
+00:23:54 | INFO     | ===== STEP 4/5: MODEL EVALUATION =====
+00:23:54 | INFO     | --- Classification Evaluation ---
+00:23:58 | INFO     | Table: Classification Evaluation
+00:23:58 | INFO     | Model | Accuracy | Precision | Recall | F1-wt | F1-mac
+00:23:58 | INFO     | RandomForest | 0.1967 | 0.1948 | 0.1967 | 0.1953 | 0.1941
+00:23:58 | INFO     | XGBoost | 0.1467 | 0.1455 | 0.1467 | 0.1458 | 0.1451
+00:23:58 | INFO     | SVM | 0.1933 | 0.1935 | 0.1933 | 0.1919 | 0.1914
+00:23:58 | INFO     | VotingEnsemble | 0.1733 | 0.1692 | 0.1733 | 0.1708 | 0.1690
+00:23:58 | INFO     | StackingEnsemble | 0.1783 | 0.1555 | 0.1783 | 0.1470 | 0.1434
+00:24:00 | INFO     | [OK] Confusion matrices saved
+00:24:01 | INFO     | [OK] ROC curves saved
+00:24:01 | INFO     | Best model: RandomForest
+00:24:01 | INFO     | Classification report:
+                   precision    recall  f1-score   support
+
+             DDoS       0.21      0.25      0.23       106
+          Malware       0.15      0.13      0.14        97
+Man-in-the-Middle       0.18      0.17      0.18        92
+         Phishing       0.23      0.25      0.24       106
+       Ransomware       0.22      0.21      0.22        99
+    SQL Injection       0.17      0.16      0.17       100
+
+         accuracy                           0.20       600
+        macro avg       0.19      0.20      0.19       600
+     weighted avg       0.19      0.20      0.20       600
+
+00:24:02 | INFO     | [OK] Classification comparison bar chart saved
+00:24:02 | INFO     | --- Regression Evaluation ---
+00:24:02 | INFO     | Table: Regression Evaluation
+00:24:02 | INFO     | Model | R² | MAE | MSE | RMSE
+00:24:02 | INFO     | RandomForest | 0.9910 | 1.3792 | 7.3084 | 2.7034
+00:24:02 | INFO     | XGBoost | 0.9897 | 1.3006 | 8.3536 | 2.8903
+00:24:02 | INFO     | Ridge | 0.1125 | 22.4533 | 717.6954 | 26.7898
+00:24:02 | INFO     | VotingEnsemble | 0.8996 | 7.6380 | 81.1689 | 9.0094
+00:24:02 | INFO     | StackingEnsemble | 0.9932 | 1.1752 | 5.5078 | 2.3469
+00:24:03 | INFO     | [OK] Actual vs Predicted plots saved
+00:24:04 | INFO     | [OK] Residual plots saved
+00:24:04 | INFO     | [OK] Comparison bar chart saved
+00:24:04 | INFO     | [OK] All evaluation plots saved to d:\ALL\Khemra\Cours\2025-2026\S6\TI608 - Machine Learning\Project\plots/
+00:24:04 | INFO     | [OK] Evaluation completed in 10.5s
+00:24:04 | INFO     | ===== STEP 5/5: INTERPRETABILITY & EXPLAINABILITY =====
+00:24:04 | INFO     | --- Interpretability & Explainability ---
+00:24:04 | INFO     | --- SHAP: Classification ---
+00:24:05 | INFO     | Using RandomForest on 100 samples ...
+00:24:22 | INFO     | [OK] SHAP summary plot saved
+00:24:23 | INFO     | [OK] SHAP bar plot saved
+00:24:24 | INFO     | [OK] SHAP waterfall plot saved
+00:24:24 | INFO     | --- SHAP: Regression ---
+00:24:24 | INFO     | Using RandomForest on 100 samples ...
+00:24:27 | INFO     | [OK] SHAP summary plot saved
+00:24:27 | INFO     | [OK] SHAP bar plot saved
+00:24:28 | INFO     | [OK] SHAP dependence plots saved (top 3)
+00:24:29 | INFO     | [OK] SHAP waterfall plot saved
+00:24:29 | INFO     | --- LIME: Classification ---
+00:24:30 | INFO     | [OK] LIME classification explanations saved (3 samples)
+00:24:30 | INFO     | --- LIME: Regression ---
+00:24:31 | INFO     | [OK] LIME regression explanations saved (3 samples)
+00:24:31 | INFO     | [OK] All interpretability plots saved to d:\ALL\Khemra\Cours\2025-2026\S6\TI608 - Machine Learning\Project\plots/
+00:24:31 | INFO     | [OK] Interpretability completed in 26.6s
+00:24:31 | INFO     | Total pipeline time: 495.8s (8.3 min)
+00:24:31 | INFO     | Pipeline completed successfully

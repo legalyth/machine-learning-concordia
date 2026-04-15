@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Predict cybersecurity attack types and financial losses using Machine Learning models (Random Forest, XGBoost, SVM, Stacking).">
+    <meta name="author" content="Khemra Cheav">
+    <meta name="theme-color" content="#0a0a0f">
+    <title>Cybersecurity Threat Prediction</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🛡️</text></svg>">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+    <script>
+        (function() {
+            var saved = localStorage.getItem('theme');
+            if (saved === 'light') document.documentElement.setAttribute('data-theme', 'light');
+        })();
+    </script>
+</head>
+<body>
+
+<button class="theme-toggle" onclick="toggleTheme()" aria-label="Toggle theme">
+    <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+    </svg>
+    <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+    </svg>
+</button>
+
+<button class="lang-toggle" onclick="toggleLang()" aria-label="Switch language">
+    <span id="langLabel">EN</span>
+</button>
+
+<div class="header">
+    <h1>Cybersecurity Threat Prediction</h1>
+    <p>Machine Learning — Classification & Regression</p>
+</div>
+
+<div class="status-bar">
+    <div class="status-item">
+        <div class="dot" id="statusDot"></div>
+        <span id="statusText">Checking...</span>
+    </div>
+    <div class="status-item">Models: <strong id="modelsStatus">—</strong></div>
+    <div class="status-item">
+        <a href="/docs">API Docs</a>
+    </div>
+</div>
+
+<div class="container">
+
+    <div class="tabs">
+        <button class="tab active" onclick="switchTab('clf')">Classification</button>
+        <button class="tab" onclick="switchTab('reg')">Regression</button>
+    </div>
+
+    <!-- ── Classification ────────────────────────────── -->
+    <div class="panel active" id="panel-clf">
+
+        <div class="panel-desc">
+            <strong>Objectif</strong> — Prédire le <strong>type d'attaque</strong> (Ransomware, Phishing, DDoS, Malware, SQL Injection, Man-in-the-Middle)
+            à partir des caractéristiques d'un incident cyber.
+        </div>
+
+        <div class="presets">
+            <span class="presets-label">Scénarios</span>
+            <button class="preset-btn" onclick="applyPreset('clf','ransomware')">Ransomware</button>
+            <button class="preset-btn" onclick="applyPreset('clf','phishing')">Phishing</button>
+            <button class="preset-btn" onclick="applyPreset('clf','ddos')">DDoS</button>
+            <button class="preset-btn" onclick="applyPreset('clf','insider')">Menace interne</button>
+            <button class="preset-btn" onclick="applyPreset('clf','nation')">Attaque étatique</button>
+        </div>
+
+        <div class="form-grid">
+            <div class="section-title">Contexte</div>
+
+            <div class="form-group">
+                <label>Country
+                    <span class="info-icon">?<span class="tooltip">Certains pays subissent plus d'attaques spécifiques en raison de leur infrastructure numérique.</span></span>
+                </label>
+                <select id="clf-country">
+                    <option>USA</option><option>UK</option><option>France</option>
+                    <option>Russia</option><option>China</option><option>India</option>
+                    <option>Germany</option><option>Brazil</option><option>Japan</option>
+                    <option>Australia</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year
+                    <span class="info-icon">?<span class="tooltip">Année de l'incident (2015–2030). Les ransomwares dominent depuis 2020.</span></span>
+                </label>
+                <input type="number" id="clf-year" value="2023" min="2015" max="2030">
+                <span class="hint">2015 – 2030</span>
+            </div>
+            <div class="form-group">
+                <label>Target Industry
+                    <span class="info-icon">?<span class="tooltip">Banking et Healthcare sont les plus visés par les ransomwares. IT et Government attirent des attaques étatiques.</span></span>
+                </label>
+                <select id="clf-industry">
+                    <option>Banking</option><option>Healthcare</option>
+                    <option>IT</option><option>Government</option>
+                    <option>Defense</option><option>Retail</option>
+                    <option>Telecom</option><option>Education</option>
+                    <option>Energy</option><option>Media</option>
+                </select>
+            </div>
+
+            <div class="section-title">Impact</div>
+
+            <div class="form-group">
+                <label>Financial Loss (M$)
+                    <span class="info-icon">?<span class="tooltip">Ransomware ~30-80M$, Phishing ~5-20M$, DDoS ~15-50M$.</span></span>
+                </label>
+                <input type="number" id="clf-loss" value="45.5" step="0.1" min="0">
+                <span class="hint">Phishing 5-20 / Ransomware 30-80 / DDoS 15-50</span>
+            </div>
+            <div class="form-group">
+                <label>Affected Users
+                    <span class="info-icon">?<span class="tooltip">Un DDoS peut toucher des millions, un ransomware ciblé quelques milliers.</span></span>
+                </label>
+                <input type="number" id="clf-users" value="500000" min="0">
+                <span class="hint">1k-50k / 50k-500k / 500k+</span>
+            </div>
+            <div class="form-group">
+                <label>Resolution Time (h)
+                    <span class="info-icon">?<span class="tooltip">Ransomware ~40-72h, DDoS ~5-20h, Phishing ~10-30h.</span></span>
+                </label>
+                <input type="number" id="clf-time" value="30" step="0.5" min="0">
+                <span class="hint">5-15h / 15-40h / 40-72h</span>
+            </div>
+
+            <div class="section-title">Vecteur & Défense</div>
+
+            <div class="form-group">
+                <label>Attack Source
+                    <span class="info-icon">?<span class="tooltip">Hacker Group = ransomware/DDoS. Nation-State = attaques sophistiquées. Insider Threat = fuites de données.</span></span>
+                </label>
+                <select id="clf-source">
+                    <option>Hacker Group</option><option>Nation-State</option>
+                    <option>Insider Threat</option><option>Unknown</option>
+                    <option>Lone Wolf</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vulnerability Type
+                    <span class="info-icon">?<span class="tooltip">Social Engineering → Phishing. Zero-Day → Malware/Ransomware. Cloud Misconfiguration → fuite de données.</span></span>
+                </label>
+                <select id="clf-vuln">
+                    <option>Weak Passwords</option><option>Zero-Day Exploit</option>
+                    <option>Unpatched Software</option><option>Social Engineering</option>
+                    <option>Cloud Misconfiguration</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Defense Mechanism
+                    <span class="info-icon">?<span class="tooltip">AI-Based Detection réduit les pertes. MFA protège contre le phishing. Firewall = protection limitée.</span></span>
+                </label>
+                <select id="clf-defense">
+                    <option>Firewall</option><option>AI-Based Detection</option>
+                    <option>Encryption</option><option>Multi-Factor Authentication</option>
+                    <option>VPN</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-clf" onclick="predictClassification()">
+                Predict Attack Type
+            </button>
+            <button class="btn-reset" onclick="resetForm('clf')">Reset</button>
+        </div>
+        <div class="result-box" id="result-clf"></div>
+    </div>
+
+    <!-- ── Regression ────────────────────────────────── -->
+    <div class="panel" id="panel-reg">
+
+        <div class="panel-desc">
+            <strong>Objectif</strong> — Prédire la <strong>perte financière</strong> (en millions $) causée par une cyberattaque,
+            pour estimer l'impact économique.
+        </div>
+
+        <div class="presets">
+            <span class="presets-label">Scénarios</span>
+            <button class="preset-btn" onclick="applyPreset('reg','ransom_bank')">Ransomware Banking</button>
+            <button class="preset-btn" onclick="applyPreset('reg','ddos_it')">DDoS IT</button>
+            <button class="preset-btn" onclick="applyPreset('reg','phish_small')">Phishing faible</button>
+            <button class="preset-btn" onclick="applyPreset('reg','malware_gov')">Malware Gov</button>
+            <button class="preset-btn" onclick="applyPreset('reg','sqli_retail')">SQLi Retail</button>
+        </div>
+
+        <div class="form-grid">
+            <div class="section-title">Contexte</div>
+
+            <div class="form-group">
+                <label>Country
+                    <span class="info-icon">?<span class="tooltip">Les pays développés tendent à subir des pertes plus élevées en raison de la valeur des actifs numériques.</span></span>
+                </label>
+                <select id="reg-country">
+                    <option>USA</option><option>UK</option><option>France</option>
+                    <option>Russia</option><option>China</option><option>India</option>
+                    <option>Germany</option><option>Brazil</option><option>Japan</option>
+                    <option>Australia</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Year
+                    <span class="info-icon">?<span class="tooltip">Les pertes financières augmentent chaque année. Données d'entraînement : 2015–2024.</span></span>
+                </label>
+                <input type="number" id="reg-year" value="2023" min="2015" max="2030">
+                <span class="hint">2015 – 2030</span>
+            </div>
+            <div class="form-group">
+                <label>Attack Type
+                    <span class="info-icon">?<span class="tooltip">Facteur N°1 : Ransomware ~50-80M$, DDoS ~30-50M$, Phishing ~5-20M$.</span></span>
+                </label>
+                <select id="reg-attack">
+                    <option>Ransomware</option><option>Phishing</option>
+                    <option>DDoS</option><option>Malware</option>
+                    <option>SQL Injection</option><option>Man-in-the-Middle</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Target Industry
+                    <span class="info-icon">?<span class="tooltip">Banking et Energy : pertes les plus élevées. Education et Media : moins impactés.</span></span>
+                </label>
+                <select id="reg-industry">
+                    <option>Banking</option><option>Healthcare</option>
+                    <option>IT</option><option>Government</option>
+                    <option>Defense</option><option>Retail</option>
+                    <option>Telecom</option><option>Education</option>
+                    <option>Energy</option><option>Media</option>
+                </select>
+            </div>
+
+            <div class="section-title">Ampleur</div>
+
+            <div class="form-group">
+                <label>Affected Users
+                    <span class="info-icon">?<span class="tooltip">Plus d'utilisateurs = perte plus élevée. Relation quasi-linéaire.</span></span>
+                </label>
+                <input type="number" id="reg-users" value="500000" min="0">
+                <span class="hint">1k-50k / 50k-500k / 500k+</span>
+            </div>
+            <div class="form-group">
+                <label>Resolution Time (h)
+                    <span class="info-icon">?<span class="tooltip">Chaque heure supplémentaire aggrave l'impact financier.</span></span>
+                </label>
+                <input type="number" id="reg-time" value="30" step="0.5" min="0">
+                <span class="hint">5-15h / 15-40h / 40-72h</span>
+            </div>
+
+            <div class="section-title">Vecteur & Défense</div>
+
+            <div class="form-group">
+                <label>Attack Source
+                    <span class="info-icon">?<span class="tooltip">Nation-State = pertes les plus lourdes. Lone Wolf = pertes plus faibles.</span></span>
+                </label>
+                <select id="reg-source">
+                    <option>Hacker Group</option><option>Nation-State</option>
+                    <option>Insider Threat</option><option>Unknown</option>
+                    <option>Lone Wolf</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Vulnerability Type
+                    <span class="info-icon">?<span class="tooltip">Zero-Day = pertes très élevées. Weak Passwords = pertes modérées.</span></span>
+                </label>
+                <select id="reg-vuln">
+                    <option>Weak Passwords</option><option>Zero-Day Exploit</option>
+                    <option>Unpatched Software</option><option>Social Engineering</option>
+                    <option>Cloud Misconfiguration</option>
+                </select>
+            </div>
+            <div class="form-group">
+                <label>Defense Mechanism
+                    <span class="info-icon">?<span class="tooltip">AI-Based Detection est la plus efficace. Firewall seul = protection limitée.</span></span>
+                </label>
+                <select id="reg-defense">
+                    <option>Firewall</option><option>AI-Based Detection</option>
+                    <option>Encryption</option><option>Multi-Factor Authentication</option>
+                    <option>VPN</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btn-reg" onclick="predictRegression()">
+                Predict Financial Loss
+            </button>
+            <button class="btn-reset" onclick="resetForm('reg')">Reset</button>
+        </div>
+        <div class="result-box" id="result-reg"></div>
+    </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="footer">
+    TI608 — Machine Learning Project &nbsp;&middot;&nbsp;
+    <a href="/docs">Swagger UI</a> &nbsp;&middot;&nbsp;
+    <a href="/health">Health</a>
+</div>
+
+<script>
+/* ── Presets ──────────────────────────────────────────── */
+const PRESETS = {
+    clf: {
+        ransomware: { country:'USA', year:2023, industry:'Healthcare', loss:65, users:120000, source:'Hacker Group', vuln:'Unpatched Software', defense:'Firewall', time:48 },
+        phishing:   { country:'UK', year:2024, industry:'Banking', loss:12, users:35000, source:'Unknown', vuln:'Social Engineering', defense:'Multi-Factor Authentication', time:18 },
+        ddos:       { country:'China', year:2023, industry:'IT', loss:28, users:2000000, source:'Nation-State', vuln:'Cloud Misconfiguration', defense:'AI-Based Detection', time:8 },
+        insider:    { country:'Germany', year:2022, industry:'Defense', loss:40, users:5000, source:'Insider Threat', vuln:'Weak Passwords', defense:'VPN', time:55 },
+        nation:     { country:'Russia', year:2023, industry:'Government', loss:90, users:800000, source:'Nation-State', vuln:'Zero-Day Exploit', defense:'Encryption', time:72 }
+    },
+    reg: {
+        ransom_bank: { country:'USA', year:2024, attack:'Ransomware', industry:'Banking', users:250000, source:'Hacker Group', vuln:'Unpatched Software', defense:'Firewall', time:50 },
+        ddos_it:     { country:'Japan', year:2023, attack:'DDoS', industry:'IT', users:3000000, source:'Nation-State', vuln:'Cloud Misconfiguration', defense:'AI-Based Detection', time:10 },
+        phish_small: { country:'France', year:2023, attack:'Phishing', industry:'Education', users:8000, source:'Lone Wolf', vuln:'Social Engineering', defense:'Multi-Factor Authentication', time:12 },
+        malware_gov: { country:'India', year:2022, attack:'Malware', industry:'Government', users:500000, source:'Nation-State', vuln:'Zero-Day Exploit', defense:'Encryption', time:60 },
+        sqli_retail: { country:'Brazil', year:2023, attack:'SQL Injection', industry:'Retail', users:150000, source:'Hacker Group', vuln:'Unpatched Software', defense:'VPN', time:25 }
+    }
+};
+
+/* ── Translations ────────────────────────────────────── */
+let currentLang = localStorage.getItem('lang') || 'fr';
+
+const LANG = {
+  fr: {
+    title: 'Cybersecurity Threat Prediction',
+    subtitle: 'Machine Learning — Classification & Régression',
+    checking: 'Vérification\u2026', online: 'En ligne', offline: 'Hors ligne',
+    models_lbl: 'Modèles :', loaded: 'Chargés', not_loaded: 'Non chargés',
+    tab_clf: 'Classification', tab_reg: 'Régression',
+    clf_desc: '<strong>Objectif</strong> — Prédire le <strong>type d\'attaque</strong> (Ransomware, Phishing, DDoS, Malware, SQL Injection, Man-in-the-Middle) à partir des caractéristiques d\'un incident cyber.',
+    reg_desc: '<strong>Objectif</strong> — Prédire la <strong>perte financière</strong> (en millions $) causée par une cyberattaque, pour estimer l\'impact économique.',
+    presets: 'Scénarios',
+    p_ransomware:'Ransomware', p_phishing:'Phishing', p_ddos:'DDoS', p_insider:'Menace interne', p_nation:'Attaque étatique',
+    p_ransom_bank:'Ransomware Banking', p_ddos_it:'DDoS IT', p_phish_small:'Phishing faible', p_malware_gov:'Malware Gov', p_sqli_retail:'SQLi Retail',
+    s_context:'Contexte', s_impact:'Impact', s_vector:'Vecteur & Défense', s_scope:'Ampleur',
+    l_country:'Pays', l_year:'Année', l_industry:'Secteur ciblé', l_loss:'Perte financière (M$)',
+    l_users:'Utilisateurs affectés', l_time:'Temps de résolution (h)', l_source:'Source de l\'attaque',
+    l_vuln:'Type de vulnérabilité', l_defense:'Mécanisme de défense', l_attack:'Type d\'attaque',
+    h_year:'2015 – 2030', h_loss:'Phishing 5-20 / Ransomware 30-80 / DDoS 15-50',
+    h_users:'1k-50k / 50k-500k / 500k+', h_time:'5-15h / 15-40h / 40-72h',
+    btn_clf:'Prédire le type d\'attaque', btn_reg:'Prédire la perte financière', btn_reset:'Réinitialiser',
+    res_title:'Résultat', res_error:'Erreur', res_confidence:'Confiance',
+    res_high:'Haute', res_moderate:'Modérée', res_low:'Faible', res_interpret:'Interprétation',
+    res_clf: p => 'Le modèle estime que cet incident correspond à une attaque de type <strong>'+p+'</strong>. Modifiez les paramètres pour voir leur influence.',
+    res_reg: l => 'Perte estimée de <strong>$'+l+' millions</strong>, basée sur le type d\'attaque, le secteur et le temps de résolution.',
+    sev_critical:'Impact critique', sev_high:'Impact élevé', sev_moderate:'Impact modéré', sev_low:'Impact faible',
+    res_solution:'Vérifiez que l\'API est en ligne et que les valeurs sont valides.',
+    v_fix:'Corrigez les champs en erreur', v_year:'Entre 2015 et 2030', v_pos:'Valeur positive requise', v_int:'Entier positif requis', v_invalid:'Valeurs invalides',
+    t_ok:'Prédiction effectuée', t_wait:'Prédiction\u2026',
+    footer:'TI608 — Projet Machine Learning',
+
+    tip_clf_country: '🌍 <strong>Pays de l\'incident</strong><br><br>🔍 <strong>Influence :</strong> Modifie la distribution des types d\'attaque. USA et UK → ransomwares fréquents. Chine et Russie → attaques étatiques (DDoS, espionnage).<br><br>📊 Les pertes financières varient aussi selon le PIB et l\'infrastructure numérique du pays.',
+    tip_clf_year: '📅 <strong>Année de l\'incident</strong><br><br>🔍 <strong>Influence :</strong> Les types d\'attaque évoluent. Les ransomwares dominent depuis 2020. Avant 2018, les DDoS étaient plus fréquents. Le phishing augmente régulièrement.',
+    tip_clf_industry: '🏢 <strong>Secteur ciblé</strong><br><br>🔍 <strong>Influence :</strong> Facteur majeur. Banking & Healthcare → ransomware fréquent. IT & Government → attaques étatiques. Education & Media → attaques moins sophistiquées.',
+    tip_clf_loss: '💰 <strong>Montant de la perte</strong> (millions $)<br><br>🔍 <strong>Influence :</strong> Indicateur fort du type.<br>• Ransomware : 30–80 M$<br>• DDoS : 15–50 M$<br>• Phishing : 5–20 M$<br>Une perte élevée oriente vers le ransomware.',
+    tip_clf_users: '👥 <strong>Utilisateurs touchés</strong><br><br>🔍 <strong>Influence :</strong> DDoS → millions (attaque de masse). Ransomware ciblé → quelques milliers. Ce ratio distingue les attaques massives des ciblées.',
+    tip_clf_time: '⏱️ <strong>Durée de résolution</strong> (heures)<br><br>🔍 <strong>Influence :</strong><br>• Ransomware : 40–72 h (négociations)<br>• DDoS : 5–20 h (mitigation rapide)<br>• Phishing : 10–30 h (investigation)',
+    tip_clf_source: '🎭 <strong>Origine de l\'attaque</strong><br><br>🔍 <strong>Influence :</strong><br>• Hacker Group → ransomware, DDoS<br>• Nation-State → attaques sophistiquées (zero-day)<br>• Insider Threat → fuites de données<br>• Lone Wolf → moins destructeur',
+    tip_clf_vuln: '🔓 <strong>Vulnérabilité exploitée</strong><br><br>🔍 <strong>Influence :</strong><br>• Social Engineering → Phishing<br>• Zero-Day → Malware / Ransomware avancé<br>• Cloud Misconfiguration → fuite massive<br>• Unpatched Software → ransomware courant',
+    tip_clf_defense: '🛡️ <strong>Défense déployée</strong><br><br>🔍 <strong>Influence :</strong> Affecte la gravité plus que le type.<br>• AI-Based Detection : −30 à 40 % de pertes<br>• MFA : protège contre le phishing<br>• Firewall seul : protection basique',
+    tip_reg_country: '🌍 <strong>Pays de l\'incident</strong><br><br>🔍 <strong>Influence sur la perte :</strong> Pays développés (USA, UK, Germany) → pertes plus élevées (valeur des actifs numériques). Pays émergents → pertes moyennes plus faibles.',
+    tip_reg_year: '📅 <strong>Année de l\'incident</strong><br><br>🔍 <strong>Influence sur la perte :</strong> Les pertes augmentent chaque année (+15 % en moyenne). Post-2020 = systématiquement plus coûteux.',
+    tip_reg_attack: '⚔️ <strong>Type d\'attaque</strong><br><br>🔍 <strong>Influence : Facteur N°1 !</strong><br>• Ransomware : 50–80 M$ (rançon + arrêt)<br>• DDoS : 30–50 M$ (perte de service)<br>• Phishing : 5–20 M$ (fraude)<br>• SQL Injection : 10–30 M$ (vol de données)',
+    tip_reg_industry: '🏢 <strong>Secteur ciblé</strong><br><br>🔍 <strong>Influence sur la perte :</strong> Banking & Energy → pertes les plus élevées. Healthcare → coûteux (données médicales). Education & Media → pertes plus faibles.',
+    tip_reg_users: '👥 <strong>Utilisateurs touchés</strong><br><br>🔍 <strong>Influence sur la perte :</strong> Relation quasi-linéaire. Au-delà de 500k utilisateurs, l\'impact explose (amendes RGPD, class actions, réputation).',
+    tip_reg_time: '⏱️ <strong>Temps de résolution</strong><br><br>🔍 <strong>Influence sur la perte :</strong> Chaque heure supplémentaire aggrave (~0,5–1 M$/h en banking). Résolution rapide (<15 h) = pertes limitées. >40 h = impact critique.',
+    tip_reg_source: '🎭 <strong>Source de l\'attaque</strong><br><br>🔍 <strong>Influence sur la perte :</strong><br>• Nation-State → pertes les plus lourdes<br>• Hacker Group → pertes élevées (ransomware)<br>• Lone Wolf → pertes plus faibles',
+    tip_reg_vuln: '🔓 <strong>Vulnérabilité exploitée</strong><br><br>🔍 <strong>Influence sur la perte :</strong><br>• Zero-Day → très élevées (aucune protection)<br>• Cloud Misconfiguration → fuite massive<br>• Weak Passwords → modérées mais fréquentes',
+    tip_reg_defense: '🛡️ <strong>Défense en place</strong><br><br>🔍 <strong>Influence sur la perte :</strong><br>• AI-Based Detection : −30 à 40 % de pertes<br>• Encryption : limite l\'exploitation des données<br>• Firewall seul : réduction minimale'
+  },
+  en: {
+    title: 'Cybersecurity Threat Prediction',
+    subtitle: 'Machine Learning — Classification & Regression',
+    checking: 'Checking\u2026', online: 'Online', offline: 'Offline',
+    models_lbl: 'Models:', loaded: 'Loaded', not_loaded: 'Not loaded',
+    tab_clf: 'Classification', tab_reg: 'Regression',
+    clf_desc: '<strong>Objective</strong> — Predict the <strong>attack type</strong> (Ransomware, Phishing, DDoS, Malware, SQL Injection, Man-in-the-Middle) from the characteristics of a cyber incident.',
+    reg_desc: '<strong>Objective</strong> — Predict the <strong>financial loss</strong> (in millions $) caused by a cyberattack, to estimate the economic impact.',
+    presets: 'Scenarios',
+    p_ransomware:'Ransomware', p_phishing:'Phishing', p_ddos:'DDoS', p_insider:'Insider Threat', p_nation:'State Attack',
+    p_ransom_bank:'Ransomware Banking', p_ddos_it:'DDoS IT', p_phish_small:'Low Phishing', p_malware_gov:'Malware Gov', p_sqli_retail:'SQLi Retail',
+    s_context:'Context', s_impact:'Impact', s_vector:'Vector & Defense', s_scope:'Scope',
+    l_country:'Country', l_year:'Year', l_industry:'Target Industry', l_loss:'Financial Loss (M$)',
+    l_users:'Affected Users', l_time:'Resolution Time (h)', l_source:'Attack Source',
+    l_vuln:'Vulnerability Type', l_defense:'Defense Mechanism', l_attack:'Attack Type',
+    h_year:'2015 – 2030', h_loss:'Phishing 5-20 / Ransomware 30-80 / DDoS 15-50',
+    h_users:'1k-50k / 50k-500k / 500k+', h_time:'5-15h / 15-40h / 40-72h',
+    btn_clf:'Predict Attack Type', btn_reg:'Predict Financial Loss', btn_reset:'Reset',
+    res_title:'Result', res_error:'Error', res_confidence:'Confidence',
+    res_high:'High', res_moderate:'Moderate', res_low:'Low', res_interpret:'Interpretation',
+    res_clf: p => 'The model estimates this incident corresponds to a <strong>'+p+'</strong> attack. Modify the parameters to see their influence.',
+    res_reg: l => 'Estimated loss of <strong>$'+l+' million</strong>, based on attack type, industry, and resolution time.',
+    sev_critical:'Critical impact', sev_high:'High impact', sev_moderate:'Moderate impact', sev_low:'Low impact',
+    res_solution:'Check that the API is online and the values are valid.',
+    v_fix:'Fix the fields in error', v_year:'Between 2015 and 2030', v_pos:'Positive value required', v_int:'Positive integer required', v_invalid:'Invalid values',
+    t_ok:'Prediction completed', t_wait:'Predicting\u2026',
+    footer:'TI608 — Machine Learning Project',
+
+    tip_clf_country: '🌍 <strong>Incident country</strong><br><br>🔍 <strong>Influence:</strong> Changes attack type probabilities. USA & UK → more ransomware. China & Russia → state-sponsored attacks (DDoS, espionage).<br><br>📊 Financial losses also vary by country GDP and infrastructure.',
+    tip_clf_year: '📅 <strong>Incident year</strong><br><br>🔍 <strong>Influence:</strong> Attack types evolve over time. Ransomware dominates since 2020. Before 2018, DDoS was more frequent. Phishing increases steadily.',
+    tip_clf_industry: '🏢 <strong>Targeted industry</strong><br><br>🔍 <strong>Influence:</strong> Major factor. Banking & Healthcare → frequent ransomware. IT & Government → state-sponsored attacks. Education & Media → less sophisticated.',
+    tip_clf_loss: '💰 <strong>Loss amount</strong> (millions $)<br><br>🔍 <strong>Influence:</strong> Strong attack type indicator.<br>• Ransomware: 30–80M$<br>• DDoS: 15–50M$<br>• Phishing: 5–20M$<br>High loss steers toward ransomware.',
+    tip_clf_users: '👥 <strong>Affected users</strong><br><br>🔍 <strong>Influence:</strong> DDoS → millions (mass attack). Targeted ransomware → a few thousand. Helps distinguish mass vs targeted attacks.',
+    tip_clf_time: '⏱️ <strong>Resolution time</strong> (hours)<br><br>🔍 <strong>Influence:</strong><br>• Ransomware: 40–72h (negotiations)<br>• DDoS: 5–20h (fast mitigation)<br>• Phishing: 10–30h (investigation)',
+    tip_clf_source: '🎭 <strong>Attack origin</strong><br><br>🔍 <strong>Influence:</strong><br>• Hacker Group → ransomware, DDoS<br>• Nation-State → sophisticated (zero-day)<br>• Insider Threat → data leaks<br>• Lone Wolf → less destructive',
+    tip_clf_vuln: '🔓 <strong>Exploited vulnerability</strong><br><br>🔍 <strong>Influence:</strong><br>• Social Engineering → Phishing<br>• Zero-Day → advanced Malware/Ransomware<br>• Cloud Misconfiguration → massive leak<br>• Unpatched Software → common ransomware vector',
+    tip_clf_defense: '🛡️ <strong>Deployed defense</strong><br><br>🔍 <strong>Influence:</strong> Affects severity more than type.<br>• AI-Based Detection: −30 to 40% losses<br>• MFA: protects against phishing<br>• Firewall alone: basic protection',
+    tip_reg_country: '🌍 <strong>Incident country</strong><br><br>🔍 <strong>Loss influence:</strong> Developed countries (USA, UK, Germany) suffer higher losses due to digital asset value. Emerging countries → lower average losses.',
+    tip_reg_year: '📅 <strong>Incident year</strong><br><br>🔍 <strong>Loss influence:</strong> Financial losses increase yearly (+15% avg). Post-2020 attacks are systematically more costly.',
+    tip_reg_attack: '⚔️ <strong>Attack type</strong><br><br>🔍 <strong>Loss influence: Factor #1!</strong><br>• Ransomware: 50–80M$ (ransom + downtime)<br>• DDoS: 30–50M$ (service loss)<br>• Phishing: 5–20M$ (fraud)<br>• SQL Injection: 10–30M$ (data theft)',
+    tip_reg_industry: '🏢 <strong>Targeted industry</strong><br><br>🔍 <strong>Loss influence:</strong> Banking & Energy → highest losses. Healthcare → costly (medical data). Education & Media → lower losses.',
+    tip_reg_users: '👥 <strong>Affected users</strong><br><br>🔍 <strong>Loss influence:</strong> Near-linear relationship. Above 500k, impact explodes (GDPR fines, class actions, reputation damage).',
+    tip_reg_time: '⏱️ <strong>Resolution time</strong><br><br>🔍 <strong>Loss influence:</strong> Each hour worsens loss (~$0.5–1M/h in banking). Fast (<15h) = limited losses. Over 40h = critical impact.',
+    tip_reg_source: '🎭 <strong>Attack source</strong><br><br>🔍 <strong>Loss influence:</strong><br>• Nation-State → heaviest losses<br>• Hacker Group → high losses (ransomware)<br>• Lone Wolf → lower losses',
+    tip_reg_vuln: '🔓 <strong>Exploited vulnerability</strong><br><br>🔍 <strong>Loss influence:</strong><br>• Zero-Day → very high (no existing protection)<br>• Cloud Misconfiguration → massive leaks<br>• Weak Passwords → moderate but frequent',
+    tip_reg_defense: '🛡️ <strong>Defense in place</strong><br><br>🔍 <strong>Loss influence:</strong><br>• AI-Based Detection: −30 to 40% losses<br>• Encryption: limits stolen data exploitation<br>• Firewall alone: minimal reduction'
+  }
+};
+
+/* ── Apply language ──────────────────────────────────── */
+function applyLanguage(lang) {
+    currentLang = lang;
+    localStorage.setItem('lang', lang);
+    document.getElementById('langLabel').textContent = lang === 'fr' ? 'EN' : 'FR';
+    const t = LANG[lang];
+
+    document.querySelector('.header h1').textContent = t.title;
+    document.querySelector('.header p').textContent = t.subtitle;
+
+    const tabs = document.querySelectorAll('.tab');
+    tabs[0].textContent = t.tab_clf;
+    tabs[1].textContent = t.tab_reg;
+
+    document.querySelector('#panel-clf .panel-desc').innerHTML = t.clf_desc;
+    document.querySelector('#panel-reg .panel-desc').innerHTML = t.reg_desc;
+
+    document.querySelectorAll('.presets-label').forEach(el => el.textContent = t.presets);
+
+    const clfP = document.querySelectorAll('#panel-clf .preset-btn');
+    [t.p_ransomware, t.p_phishing, t.p_ddos, t.p_insider, t.p_nation].forEach((x,i) => { if(clfP[i]) clfP[i].textContent = x; });
+    const regP = document.querySelectorAll('#panel-reg .preset-btn');
+    [t.p_ransom_bank, t.p_ddos_it, t.p_phish_small, t.p_malware_gov, t.p_sqli_retail].forEach((x,i) => { if(regP[i]) regP[i].textContent = x; });
+
+    const clfS = document.querySelectorAll('#panel-clf .section-title');
+    [t.s_context, t.s_impact, t.s_vector].forEach((x,i) => { if(clfS[i]) clfS[i].textContent = x; });
+    const regS = document.querySelectorAll('#panel-reg .section-title');
+    [t.s_context, t.s_scope, t.s_vector].forEach((x,i) => { if(regS[i]) regS[i].textContent = x; });
+
+    const lm = {
+        'clf-country':t.l_country,'clf-year':t.l_year,'clf-industry':t.l_industry,
+        'clf-loss':t.l_loss,'clf-users':t.l_users,'clf-time':t.l_time,
+        'clf-source':t.l_source,'clf-vuln':t.l_vuln,'clf-defense':t.l_defense,
+        'reg-country':t.l_country,'reg-year':t.l_year,'reg-attack':t.l_attack,
+        'reg-industry':t.l_industry,'reg-users':t.l_users,'reg-time':t.l_time,
+        'reg-source':t.l_source,'reg-vuln':t.l_vuln,'reg-defense':t.l_defense
+    };
+    for (const [id, txt] of Object.entries(lm)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const lbl = el.closest('.form-group').querySelector('label');
+        if (lbl && lbl.firstChild && lbl.firstChild.nodeType === 3) lbl.firstChild.textContent = txt + '\n                    ';
+    }
+
+    const tm = {
+        'clf-country':t.tip_clf_country,'clf-year':t.tip_clf_year,'clf-industry':t.tip_clf_industry,
+        'clf-loss':t.tip_clf_loss,'clf-users':t.tip_clf_users,'clf-time':t.tip_clf_time,
+        'clf-source':t.tip_clf_source,'clf-vuln':t.tip_clf_vuln,'clf-defense':t.tip_clf_defense,
+        'reg-country':t.tip_reg_country,'reg-year':t.tip_reg_year,'reg-attack':t.tip_reg_attack,
+        'reg-industry':t.tip_reg_industry,'reg-users':t.tip_reg_users,'reg-time':t.tip_reg_time,
+        'reg-source':t.tip_reg_source,'reg-vuln':t.tip_reg_vuln,'reg-defense':t.tip_reg_defense
+    };
+    for (const [id, html] of Object.entries(tm)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const tip = el.closest('.form-group').querySelector('.tooltip');
+        if (tip) tip.innerHTML = html;
+    }
+
+    const hm = {
+        'clf-year':t.h_year,'clf-loss':t.h_loss,'clf-users':t.h_users,'clf-time':t.h_time,
+        'reg-year':t.h_year,'reg-users':t.h_users,'reg-time':t.h_time
+    };
+    for (const [id, txt] of Object.entries(hm)) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const h = el.closest('.form-group').querySelector('.hint');
+        if (h) h.textContent = txt;
+    }
+
+    const bc = document.getElementById('btn-clf');
+    if (!bc.disabled) bc.textContent = t.btn_clf;
+    const br = document.getElementById('btn-reg');
+    if (!br.disabled) br.textContent = t.btn_reg;
+    document.querySelectorAll('.btn-reset').forEach(el => el.textContent = t.btn_reset);
+
+    const ml = document.getElementById('modelsStatus').parentElement;
+    if (ml.firstChild && ml.firstChild.nodeType === 3) ml.firstChild.textContent = t.models_lbl + ' ';
+
+    document.querySelector('.footer').innerHTML = t.footer + ' &nbsp;&middot;&nbsp; <a href="/docs">Swagger UI</a> &nbsp;&middot;&nbsp; <a href="/health">Health</a>';
+}
+
+function toggleLang() { applyLanguage(currentLang === 'fr' ? 'en' : 'fr'); }
+
+/* ── Presets & Reset ─────────────────────────────────── */
+function applyPreset(panel, key) {
+    if (!key) return;
+    const p = PRESETS[panel][key];
+    if (panel === 'clf') {
+        setVal('clf-country', p.country); setVal('clf-year', p.year);
+        setVal('clf-industry', p.industry); setVal('clf-loss', p.loss);
+        setVal('clf-users', p.users); setVal('clf-source', p.source);
+        setVal('clf-vuln', p.vuln); setVal('clf-defense', p.defense);
+        setVal('clf-time', p.time);
+    } else {
+        setVal('reg-country', p.country); setVal('reg-year', p.year);
+        setVal('reg-attack', p.attack); setVal('reg-industry', p.industry);
+        setVal('reg-users', p.users); setVal('reg-source', p.source);
+        setVal('reg-vuln', p.vuln); setVal('reg-defense', p.defense);
+        setVal('reg-time', p.time);
+    }
+}
+
+function resetForm(panel) {
+    if (panel === 'clf') {
+        setVal('clf-country','USA'); setVal('clf-year',2023);
+        setVal('clf-industry','Banking'); setVal('clf-loss',45.5);
+        setVal('clf-users',500000); setVal('clf-source','Hacker Group');
+        setVal('clf-vuln','Weak Passwords'); setVal('clf-defense','Firewall');
+        setVal('clf-time',30);
+    } else {
+        setVal('reg-country','USA'); setVal('reg-year',2023);
+        setVal('reg-attack','Ransomware'); setVal('reg-industry','Banking');
+        setVal('reg-users',500000); setVal('reg-source','Hacker Group');
+        setVal('reg-vuln','Weak Passwords'); setVal('reg-defense','Firewall');
+        setVal('reg-time',30);
+    }
+    const box = document.getElementById(`result-${panel}`);
+    box.className = 'result-box'; box.innerHTML = '';
+}
+
+/* ── Health ──────────────────────────────────────────── */
+async function checkHealth() {
+    const t = LANG[currentLang];
+    try {
+        const r = await fetch('/health');
+        const d = await r.json();
+        document.getElementById('statusDot').className = 'dot green';
+        document.getElementById('statusText').textContent = t.online;
+        document.getElementById('modelsStatus').textContent = d.models_loaded ? t.loaded : t.not_loaded;
+    } catch {
+        document.getElementById('statusDot').className = 'dot red';
+        document.getElementById('statusText').textContent = t.offline;
+        document.getElementById('modelsStatus').textContent = '—';
+    }
+}
+checkHealth();
+setInterval(checkHealth, 15000);
+
+/* ── Tabs ────────────────────────────────────────────── */
+function switchTab(tab) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(p => p.classList.remove('active'));
+    if (tab === 'clf') {
+        document.querySelectorAll('.tab')[0].classList.add('active');
+        document.getElementById('panel-clf').classList.add('active');
+    } else {
+        document.querySelectorAll('.tab')[1].classList.add('active');
+        document.getElementById('panel-reg').classList.add('active');
+    }
+}
+
+/* ── Validation ───────────────────────────────────────── */
+function clearErrors(prefix) {
+    document.querySelectorAll(`#panel-${prefix} .field-error`).forEach(el => el.classList.remove('field-error'));
+    document.querySelectorAll(`#panel-${prefix} .error-msg`).forEach(el => el.remove());
+}
+
+function markError(id, msg) {
+    const el = document.getElementById(id);
+    el.classList.add('field-error');
+    const span = document.createElement('span');
+    span.className = 'error-msg';
+    span.textContent = msg;
+    el.parentNode.appendChild(span);
+    el.addEventListener('input', function once() { el.classList.remove('field-error'); const m = el.parentNode.querySelector('.error-msg'); if (m) m.remove(); el.removeEventListener('input', once); }, { once: true });
+    el.addEventListener('change', function once() { el.classList.remove('field-error'); const m = el.parentNode.querySelector('.error-msg'); if (m) m.remove(); el.removeEventListener('change', once); }, { once: true });
+}
+
+function validateClf() {
+    clearErrors('clf');
+    const t = LANG[currentLang];
+    let ok = true;
+    const year = parseInt(v('clf-year'));
+    if (isNaN(year) || year < 2015 || year > 2030) { markError('clf-year', t.v_year); ok = false; }
+    const loss = parseFloat(v('clf-loss'));
+    if (isNaN(loss) || loss < 0) { markError('clf-loss', t.v_pos); ok = false; }
+    const users = parseInt(v('clf-users'));
+    if (isNaN(users) || users < 0) { markError('clf-users', t.v_int); ok = false; }
+    const time = parseFloat(v('clf-time'));
+    if (isNaN(time) || time < 0) { markError('clf-time', t.v_pos); ok = false; }
+    if (!ok) toast(t.v_fix, 'error');
+    return ok;
+}
+
+function validateReg() {
+    clearErrors('reg');
+    const t = LANG[currentLang];
+    let ok = true;
+    const year = parseInt(v('reg-year'));
+    if (isNaN(year) || year < 2015 || year > 2030) { markError('reg-year', t.v_year); ok = false; }
+    const users = parseInt(v('reg-users'));
+    if (isNaN(users) || users < 0) { markError('reg-users', t.v_int); ok = false; }
+    const time = parseFloat(v('reg-time'));
+    if (isNaN(time) || time < 0) { markError('reg-time', t.v_pos); ok = false; }
+    if (!ok) toast(t.v_fix, 'error');
+    return ok;
+}
+
+/* ── Classification ──────────────────────────────────── */
+async function predictClassification() {
+    if (!validateClf()) return;
+    const btn = document.getElementById('btn-clf');
+    const t = LANG[currentLang];
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ' + t.t_wait;
+
+    const body = {
+        Country: v('clf-country'),
+        Year: parseInt(v('clf-year')),
+        Target_Industry: v('clf-industry'),
+        Financial_Loss: parseFloat(v('clf-loss')),
+        Number_of_Affected_Users: parseInt(v('clf-users')),
+        Attack_Source: v('clf-source'),
+        Security_Vulnerability_Type: v('clf-vuln'),
+        Defense_Mechanism_Used: v('clf-defense'),
+        Incident_Resolution_Time: parseFloat(v('clf-time'))
+    };
+
+    try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 10000);
+        const r = await fetch('/predict/attack-type', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: ctrl.signal
+        });
+        clearTimeout(timer);
+        const d = await r.json();
+        if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : t.v_invalid);
+
+        const maxProb = Math.max(...Object.values(d.class_probabilities));
+        const confPct = (d.confidence * 100).toFixed(1);
+        let confColor = confPct >= 60 ? 'var(--green)' : confPct >= 35 ? 'var(--gold)' : 'var(--red)';
+        let confLabel = confPct >= 60 ? t.res_high : confPct >= 35 ? t.res_moderate : t.res_low;
+
+        let html = `<div class="result-title">${t.res_title}</div>
+            <div class="prediction-main">${d.prediction}</div>
+            <div class="prediction-sub">
+                ${t.res_confidence} : <span style="color:${confColor};font-weight:500">${confPct}%</span>
+                <span style="color:var(--text-muted);font-size:0.8rem"> — ${confLabel}</span>
+            </div>
+            <div class="prob-bars">`;
+        const sorted = Object.entries(d.class_probabilities).sort((a, b) => b[1] - a[1]);
+        for (const [name, prob] of sorted) {
+            const pct = (prob * 100).toFixed(1);
+            const cls = prob === maxProb ? 'highlight' : 'normal';
+            html += `<div class="prob-row">
+                <span class="prob-label">${name}</span>
+                <div class="prob-track">
+                    <div class="prob-fill ${cls}" style="width:${Math.max(pct, 5)}%">${pct}%</div>
+                </div>
+            </div>`;
+        }
+        html += '</div>';
+        html += `<div class="result-hint">
+            <strong>${t.res_interpret} :</strong> ${t.res_clf(d.prediction)}
+        </div>`;
+        showResult('result-clf', html, 'success');
+        toast(t.t_ok, 'success');
+    } catch (e) {
+        showResult('result-clf', `<div class="result-title">${t.res_error}</div><p style="color:var(--red)">${e.message}</p>
+            <div class="result-hint"><strong>Solution :</strong> ${t.res_solution}</div>`, 'error');
+        toast(e.message, 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = t.btn_clf;
+}
+
+/* ── Regression ──────────────────────────────────────── */
+async function predictRegression() {
+    if (!validateReg()) return;
+    const btn = document.getElementById('btn-reg');
+    const t = LANG[currentLang];
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spinner"></span> ' + t.t_wait;
+
+    const body = {
+        Country: v('reg-country'),
+        Year: parseInt(v('reg-year')),
+        Attack_Type: v('reg-attack'),
+        Target_Industry: v('reg-industry'),
+        Number_of_Affected_Users: parseInt(v('reg-users')),
+        Attack_Source: v('reg-source'),
+        Security_Vulnerability_Type: v('reg-vuln'),
+        Defense_Mechanism_Used: v('reg-defense'),
+        Incident_Resolution_Time: parseFloat(v('reg-time'))
+    };
+
+    try {
+        const ctrl = new AbortController();
+        const timer = setTimeout(() => ctrl.abort(), 10000);
+        const r = await fetch('/predict/financial-loss', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body),
+            signal: ctrl.signal
+        });
+        clearTimeout(timer);
+        const d = await r.json();
+        if (!r.ok) throw new Error(typeof d.detail === 'string' ? d.detail : t.v_invalid);
+
+        const loss = d.predicted_financial_loss;
+        let severity, sevColor;
+        if (loss >= 70) { severity = t.sev_critical; sevColor = 'var(--red)'; }
+        else if (loss >= 40) { severity = t.sev_high; sevColor = 'var(--gold)'; }
+        else if (loss >= 15) { severity = t.sev_moderate; sevColor = 'var(--text-secondary)'; }
+        else { severity = t.sev_low; sevColor = 'var(--green)'; }
+
+        const html = `<div class="result-title">${t.res_title}</div>
+            <div class="loss-value">$${loss.toFixed(2)}</div>
+            <div class="loss-unit">${d.unit}</div>
+            <div style="margin-top:1rem;font-size:0.9rem;color:${sevColor};font-weight:500;letter-spacing:0.03em">${severity}</div>
+            <div class="result-hint">
+                <strong>${t.res_interpret} :</strong> ${t.res_reg(loss.toFixed(2))}
+            </div>`;
+        showResult('result-reg', html, 'success');
+        toast(t.t_ok, 'success');
+    } catch (e) {
+        showResult('result-reg', `<div class="result-title">${t.res_error}</div><p style="color:var(--red)">${e.message}</p>
+            <div class="result-hint"><strong>Solution :</strong> ${t.res_solution}</div>`, 'error');
+        toast(e.message, 'error');
+    }
+    btn.disabled = false;
+    btn.textContent = t.btn_reg;
+}
+
+/* ── Helpers ─────────────────────────────────────────── */
+function toggleTheme() {
+    const isLight = document.documentElement.getAttribute('data-theme') === 'light';
+    if (isLight) {
+        document.documentElement.removeAttribute('data-theme');
+        localStorage.setItem('theme', 'dark');
+    } else {
+        document.documentElement.setAttribute('data-theme', 'light');
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+function v(id) { return document.getElementById(id).value; }
+function setVal(id, val) { document.getElementById(id).value = val; }
+
+function toast(msg, type) {
+    const container = document.getElementById('toastContainer');
+    const el = document.createElement('div');
+    el.className = 'toast ' + type;
+    el.textContent = msg;
+    container.appendChild(el);
+    setTimeout(() => { el.style.animation = 'toastOut 0.3s ease forwards'; setTimeout(() => el.remove(), 350); }, 3200);
+}
+
+function showResult(id, html, type) {
+    const box = document.getElementById(id);
+    box.className = 'result-box ' + type;
+    box.innerHTML = html;
+    box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+/* ── Init ────────────────────────────────────────────── */
+applyLanguage(currentLang);
+</script>
+</body>
+</html>
